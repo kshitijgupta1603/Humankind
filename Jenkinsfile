@@ -24,7 +24,7 @@ pipeline {
     stage('Stop & Remove Old Container') {
       steps {
         script {
-          sh "docker rm -f ${CONTAINER_NAME} || echo 'No existing container'"
+          bat "docker rm -f ${CONTAINER_NAME} || echo 'No existing container'"
         }
       }
     }
@@ -32,7 +32,7 @@ pipeline {
     stage('Run New Container') {
       steps {
         script {
-          sh "docker run -d -p 80:80 --name ${CONTAINER_NAME} ${IMAGE_NAME}"
+          bat "docker run -d -p 80:80 --name ${CONTAINER_NAME} ${IMAGE_NAME}"
         }
       }
     }
