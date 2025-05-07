@@ -13,7 +13,7 @@ pipeline {
                 script {
                     // Check if npm is installed and run npm install
                     if (fileExists('package.json')) {
-                        sh 'npm install'
+                        bat 'npm install'
                     } else {
                         error 'package.json not found. Please ensure the project is a Node.js project.'
                     }
@@ -25,7 +25,7 @@ pipeline {
             steps {
                 script {
                     // Ensure npm run build is defined in package.json
-                    if (sh(script: 'npm run build', returnStatus: true) == 0) {
+                    if (bat(script: 'npm run build', returnStatus: true) == 0) {
                         echo 'Build completed successfully'
                     } else {
                         error 'npm run build failed. Please check the build script in package.json.'
