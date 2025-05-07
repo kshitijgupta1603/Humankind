@@ -11,7 +11,6 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    // Check if npm is installed and run npm install
                     if (fileExists('package.json')) {
                         bat 'npm install'
                     } else {
@@ -24,11 +23,19 @@ pipeline {
         stage('Build Project') {
             steps {
                 script {
-                    // Ensure npm run build is defined in package.json
-                    if (bat(script: 'npm run build', returnStatus: true) == 0) {
-                        echo 'Build completed successfully'
+                    if (fileExists('package.json')) {
+                        def buildStatus = bat(script: '''
+                            set CI=
+                            npm run build
+                        ''', returnStatus: true)
+
+                        if (buildStatus == 0) {
+                            echo 'Build completed successfully'
+                        } else {
+                            error 'npm run build failed. Please check the build script in package.json.'
+                        }
                     } else {
-                        error 'npm run build failed. Please check the build script in package.json.'
+                        error 'package.json not found. Cannot build project.'
                     }
                 }
             }
