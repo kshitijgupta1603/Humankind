@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = 'humankind-app'
+        CONTAINER_NAME = 'humankind-container'
+    }
+
     stages {
         stage('Clone Repository') {
             steps {
@@ -29,9 +34,7 @@ pipeline {
                             npm run build
                         ''', returnStatus: true)
 
-                        if (buildStatus == 0) {
-                            echo 'Build completed successfully'
-                        } else {
+                        if (buildStatus != 0) {
                             error 'npm run build failed. Please check the build script in package.json.'
                         }
                     } else {
@@ -40,14 +43,35 @@ pipeline {
                 }
             }
         }
+
+        stage('Build Docker Image') {
+            steps {
+                bat "docker build -t %IMAGE_NAME% ."
+            }
+        }
+
+        stage('Stop & Remove Old Container') {
+            steps {
+                bat """
+                    docker stop %CONTAINER_NAME% || echo Not running
+                    docker rm %CONTAINER_NAME% || echo Already removed
+                """
+            }
+        }
+
+        stage('Run New Container') {
+            steps {
+                bat "docker run -d -p 3000:80 --name %CONTAINER_NAME% %IMAGE_NAME%"
+            }
+        }
     }
 
     post {
         success {
-            echo 'Build completed successfully!'
+            echo '✅ Build and deployment completed successfully!'
         }
         failure {
-            echo 'Build failed. Please check the logs.'
+            echo '❌ Build or deployment failed. Check the logs for details.'
         }
     }
 }
